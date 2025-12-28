@@ -10,7 +10,12 @@ export default function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', role_id: '', address: '', city: ''
+    name: '',
+    phone: '',
+    email: '',
+    role_id: '',
+    address: '',
+    city: '',
   });
 
   const columns = [
@@ -27,22 +32,49 @@ export default function UsersPage() {
     fetchRoles();
   }, []);
 
+  /* ================= SAFE FETCH HELPERS ================= */
+
+  const safeFetchJson = async (url) => {
+    try {
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        console.error(`API error ${res.status} for ${url}`);
+        return [];
+      }
+
+      const text = await res.text();
+      if (!text) return [];
+
+      const parsed = JSON.parse(text);
+      return parsed.data || [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  /* ================= FETCH FUNCTIONS ================= */
+
   const fetchUsers = async () => {
-    const res = await fetch('/api/users');
-    const data = await res.json();
+    const data = await safeFetchJson('/api/users');
     setUsers(data);
   };
 
   const fetchRoles = async () => {
-    const res = await fetch('/api/roles');
-    const data = await res.json();
+    const data = await safeFetchJson('/api/roles');
     setRoles(data);
   };
 
+  /* ================= CRUD HANDLERS ================= */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const method = editingUser ? 'PUT' : 'POST';
-    const body = editingUser ? { ...formData, user_id: editingUser.user_id } : formData;
+    const body = editingUser
+      ? { ...formData, user_id: editingUser.user_id }
+      : formData;
 
     await fetch('/api/users', {
       method,
@@ -52,7 +84,15 @@ export default function UsersPage() {
 
     setIsModalOpen(false);
     setEditingUser(null);
-    setFormData({ name: '', phone: '', email: '', role_id: '', address: '', city: '' });
+    setFormData({
+      name: '',
+      phone: '',
+      email: '',
+      role_id: '',
+      address: '',
+      city: '',
+    });
+
     fetchUsers();
   };
 
@@ -78,9 +118,18 @@ export default function UsersPage() {
 
   const openAddModal = () => {
     setEditingUser(null);
-    setFormData({ name: '', phone: '', email: '', role_id: '', address: '', city: '' });
+    setFormData({
+      name: '',
+      phone: '',
+      email: '',
+      role_id: '',
+      address: '',
+      city: '',
+    });
     setIsModalOpen(true);
   };
+
+  /* ================= RENDER ================= */
 
   return (
     <div>
@@ -94,7 +143,12 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <Table columns={columns} data={users} onEdit={handleEdit} onDelete={handleDelete} />
+      <Table
+        columns={columns}
+        data={users}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
       <Modal
         isOpen={isModalOpen}
@@ -109,69 +163,77 @@ export default function UsersPage() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Phone</label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Role</label>
             <select
               value={formData.role_id}
               onChange={(e) => setFormData({ ...formData, role_id: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             >
               <option value="">Select Role</option>
               {roles.map((role) => (
-                <option key={role.role_id} value={role.role_id}>{role.role_name}</option>
+                <option key={role.role_id} value={role.role_id}>
+                  {role.role_name}
+                </option>
               ))}
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Address</label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">City</label>
             <input
               type="text"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="mt-1 w-full border rounded px-3 py-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50"
+              className="px-4 py-2 border rounded"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 text-white rounded"
             >
               {editingUser ? 'Update' : 'Create'}
             </button>
@@ -181,3 +243,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
+

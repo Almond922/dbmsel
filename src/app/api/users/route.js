@@ -1,61 +1,31 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request) {
   try {
+    // Require a valid token for this endpoint
+    const tokenCookie = request.cookies.get && request.cookies.get('token');
+    const token = tokenCookie && tokenCookie.value ? tokenCookie.value : tokenCookie || null;
+    const payload = token ? verifyToken(token) : null;
+    if (!payload) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const [rows] = await pool.query(`
-      SELECT u.*, r.role_name 
-      FROM Users u 
+      SELECT u.user_id, u.name, u.email, u.phone, u.city, r.role_name
+      FROM Users u
       LEFT JOIN User_Roles r ON u.role_id = r.role_id
       ORDER BY u.user_id DESC
     `);
-    return NextResponse.json(rows);
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const { name, phone, email, role_id, address, city } = body;
-    
-    const [result] = await pool.query(
-      'INSERT INTO Users (name, phone, email, role_id, address, city) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, phone, email, role_id || null, address, city]
+    return NextResponse.json({ data: rows });
+  } catch (error) {
+    console.error('GET /api/users error:', error);
+    return NextResponse.json(
+      { data: [], error: 'Failed to fetch users' },
+      { status: 500 }
     );
-    
-    return NextResponse.json({ id: result.insertId, message: 'User created successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(request) {
-  try {
-    const body = await request.json();
-    const { user_id, name, phone, email, role_id, address, city } = body;
-    
-    await pool.query(
-      'UPDATE Users SET name=?, phone=?, email=?, role_id=?, address=?, city=? WHERE user_id=?',
-      [name, phone, email, role_id || null, address, city, user_id]
-    );
-    
-    return NextResponse.json({ message: 'User updated successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
-export async function DELETE(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    await pool.query('DELETE FROM Users WHERE user_id = ?', [id]);
-    
-    return NextResponse.json({ message: 'User deleted successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}

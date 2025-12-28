@@ -83,12 +83,35 @@ export default function AssignmentsPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Assignments</h1>
-        <button
-          onClick={openAddModal}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
-          + Add Assignment
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openAddModal}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            + Add Assignment
+          </button>
+
+          <button
+            onClick={async () => {
+              if (!confirm('Run auto-assign now? This will create assignments for pending requests.')) return;
+              try {
+                const res = await fetch('/api/assignments/auto-assign', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) alert('Auto-assign failed: ' + (data.error || 'unknown'));
+                else {
+                  alert('Auto-assign completed. Results: ' + JSON.stringify(data.results));
+                  fetchAssignments();
+                  fetchOptions();
+                }
+              } catch (err) {
+                alert('Auto-assign failed: ' + err.message);
+              }
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Run Auto-assign
+          </button>
+        </div>
       </div>
 
       <Table columns={columns} data={assignments} onEdit={handleEdit} onDelete={handleDelete} />

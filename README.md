@@ -34,3 +34,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## Auth setup
+
+- Install new dependencies: `npm install`
+- Run the migration `init/02_add_auth.sql` against your database (adds `password_hash`).
+- Create a user with: `POST /api/auth/register` JSON body: `{ name, email, password, role_id }`.
+- Visit `http://localhost:3000/` — unauthenticated visitors will be redirected to `/login`.
+
+Dev quick-login: the project includes a development-only bypass so you can sign in without creating a DB user. It is enabled by default in development via `.env` values:
+
+- `DEV_AUTH=true`
+- `DEV_ADMIN_EMAIL=admin@example.com`
+- `DEV_ADMIN_PASSWORD=Test1234!`
+
+**Important:** This bypass is only for local development and testing. Do NOT enable `DEV_AUTH` in production. For production, set `JWT_SECRET` in your environment and use HTTPS.  

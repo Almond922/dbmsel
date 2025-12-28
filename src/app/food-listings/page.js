@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Table from '@/components/Table';
 import Modal from '@/components/Modal';
+import ExpiryBadge from '@/components/ExpiryBadge';
 
 export default function FoodListingsPage() {
+  const [rawListings, setRawListings] = useState([]);
   const [listings, setListings] = useState([]);
   const [options, setOptions] = useState({ categories: [], statuses: [], donors: [], locations: [] });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,12 +14,37 @@ export default function FoodListingsPage() {
   const [formData, setFormData] = useState({
     user_id: '', category_id: '', quantity: '', prepared_time: '', expiry_time: '', status_id: '', pickup_location_id: ''
   });
+  const [hideExpired, setHideExpired] = useState(true);
+  const [sortByExpiry, setSortByExpiry] = useState(true);
+
+  // Recompute displayed listings when raw data or filters change
+  useEffect(() => {
+    let normalized = (Array.isArray(rawListings) ? rawListings : []).map((r) => {
+      const expiry_ts = r.expiry_time ? new Date(r.expiry_time).getTime() : null;
+      return { ...r, expiry_time: r.expiry_time ? new Date(r.expiry_time).toISOString() : null, expiry_ts };
+    });
+
+    if (hideExpired) {
+      normalized = normalized.filter((r) => r.expiry_ts === null || r.expiry_ts > Date.now());
+    }
+
+    if (sortByExpiry) {
+      normalized.sort((a, b) => {
+        const ta = a.expiry_ts !== null ? a.expiry_ts : Number.POSITIVE_INFINITY;
+        const tb = b.expiry_ts !== null ? b.expiry_ts : Number.POSITIVE_INFINITY;
+        return ta - tb;
+      });
+    }
+
+    setListings(normalized);
+  }, [rawListings, hideExpired, sortByExpiry]);
 
   const columns = [
     { key: 'listing_id', label: 'ID' },
     { key: 'donor_name', label: 'Donor' },
     { key: 'category_name', label: 'Category' },
     { key: 'quantity', label: 'Quantity' },
+    { key: 'expiry_time', label: 'Expires', render: (row) => <ExpiryBadge expiryTime={row.expiry_time} /> },
     { key: 'status_name', label: 'Status' },
     { key: 'pickup_address', label: 'Pickup Location' },
   ];
@@ -30,7 +57,8 @@ export default function FoodListingsPage() {
   const fetchListings = async () => {
     const res = await fetch('/api/food-listings');
     const data = await res.json();
-    setListings(data);
+    // store raw listings and let the effect re-compute filtering/sorting
+    setRawListings(Array.isArray(data) ? data : []);
   };
 
   const fetchOptions = async () => {
@@ -85,14 +113,29 @@ export default function FoodListingsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Food Listings</h1>
-        <button
-          onClick={openAddModal}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
-          + Add Listing
-        </button>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-800">Food Listings</h1>
+
+          <label className="inline-flex items-center text-sm ml-4">
+            <input type="checkbox" checked={hideExpired} onChange={(e) => { setHideExpired(e.target.checked); }} className="mr-2" />
+            Hide expired
+          </label>
+
+          <label className="inline-flex items-center text-sm ml-4">
+            <input type="checkbox" checked={sortByExpiry} onChange={(e) => { setSortByExpiry(e.target.checked); }} className="mr-2" />
+            Sort by expiry (earliest first)
+          </label>
+        </div>
+
+        <div>
+          <button
+            onClick={openAddModal}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            + Add Listing
+          </button>
+        </div>
       </div>
 
       <Table columns={columns} data={listings} onEdit={handleEdit} onDelete={handleDelete} />

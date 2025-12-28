@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -7,6 +9,7 @@ export default function Navbar() {
     { href: '/food-listings', label: 'Food Listings' },
     { href: '/requests', label: 'Requests' },
     { href: '/assignments', label: 'Assignments' },
+    { href: '/admin/assignments', label: 'Admin' },
     { href: '/feedback', label: 'Feedback' },
   ];
 
@@ -17,7 +20,7 @@ export default function Navbar() {
           <Link href="/" className="font-bold text-xl">
             🍽️ Food Donation
           </Link>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 items-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -27,6 +30,15 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <button
+              onClick={async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+              }}
+              className="hover:bg-green-700 px-3 py-2 rounded transition"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
