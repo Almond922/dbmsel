@@ -24,55 +24,87 @@ export default async function Dashboard() {
   const stats = await getStats();
 
   const cards = [
-    { title: 'Users', count: stats.users, href: '/users', color: 'bg-blue-500', icon: '👥' },
-    { title: 'Food Listings', count: stats.listings, href: '/food-listings', color: 'bg-green-500', icon: '🍲' },
-    { title: 'Requests', count: stats.requests, href: '/requests', color: 'bg-yellow-500', icon: '📋' },
-    { title: 'Assignments', count: stats.assignments, href: '/assignments', color: 'bg-purple-500', icon: '🚚' },
+    { title: 'Users', count: stats.users, href: '/users', color: 'from-blue-500 to-blue-600', icon: '👥' },
+    { title: 'Food Listings', count: stats.listings, href: '/food-listings', color: 'from-green-500 to-green-600', icon: '🍲' },
+    { title: 'Requests', count: stats.requests, href: '/requests', color: 'from-amber-500 to-amber-600', icon: '📋' },
+    { title: 'Assignments', count: stats.assignments, href: '/assignments', color: 'from-purple-500 to-purple-600', icon: '🚚' },
+  ];
+
+  const quickLinks = [
+    { title: 'Manage Users', description: 'Add, edit, or remove users', href: '/users', icon: '👤', color: 'blue' },
+    { title: 'Food Listings', description: 'Manage food donations', href: '/food-listings', icon: '🥘', color: 'green' },
+    { title: 'Requests', description: 'Handle food requests', href: '/requests', icon: '📝', color: 'amber' },
+    { title: 'Assignments', description: 'Track deliveries', href: '/assignments', icon: '🚛', color: 'purple' },
+    { title: 'Feedback', description: 'View user feedback', href: '/feedback', icon: '⭐', color: 'indigo' },
   ];
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {cards.map((card) => (
-          <Link key={card.href} href={card.href}>
-            <div className={`${card.color} text-white rounded-lg shadow-lg p-6 hover:opacity-90 transition`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-80">{card.title}</p>
-                  <p className="text-3xl font-bold">{card.count}</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-5xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p className="text-gray-600 text-lg">Welcome back! Here's an overview of your food donation system.</p>
+        </div>
+        
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {cards.map((card) => (
+            <Link key={card.href} href={card.href}>
+              <div className={`bg-gradient-to-br ${card.color} text-white rounded-xl shadow-lg p-5 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs opacity-90 font-medium tracking-wide">{card.title}</p>
+                    <p className="text-3xl font-bold mt-1 group-hover:scale-110 transition-transform">{card.count}</p>
+                  </div>
+                  <span className="text-4xl opacity-80 group-hover:scale-110 transition-transform">{card.icon}</span>
                 </div>
-                <span className="text-4xl">{card.icon}</span>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Links</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Link href="/users" className="p-4 border rounded-lg hover:bg-gray-50 transition">
-            <h3 className="font-medium">Manage Users</h3>
-            <p className="text-sm text-gray-500">Add, edit, or remove users</p>
-          </Link>
-          <Link href="/food-listings" className="p-4 border rounded-lg hover:bg-gray-50 transition">
-            <h3 className="font-medium">Food Listings</h3>
-            <p className="text-sm text-gray-500">Manage food donations</p>
-          </Link>
-          <Link href="/requests" className="p-4 border rounded-lg hover:bg-gray-50 transition">
-            <h3 className="font-medium">Requests</h3>
-            <p className="text-sm text-gray-500">Handle food requests</p>
-          </Link>
-          <Link href="/assignments" className="p-4 border rounded-lg hover:bg-gray-50 transition">
-            <h3 className="font-medium">Assignments</h3>
-            <p className="text-sm text-gray-500">Track deliveries</p>
-          </Link>
-          <Link href="/feedback" className="p-4 border rounded-lg hover:bg-gray-50 transition">
-            <h3 className="font-medium">Feedback</h3>
-            <p className="text-sm text-gray-500">View user feedback</p>
-          </Link>
+        {/* Quick Links Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Access</h2>
+            <p className="text-gray-600">Quickly navigate to key areas of the system</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            {quickLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                <div className="p-4 border-2 border-gray-100 rounded-lg hover:border-gray-300 hover:shadow-md transition-all duration-300 group cursor-pointer h-full flex flex-col">
+                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform inline-block">{link.icon}</span>
+                  <h3 className="font-semibold text-gray-900 mb-1 text-base">{link.title}</h3>
+                  <p className="text-xs text-gray-500 flex-grow">{link.description}</p>
+                  <div className="mt-2 text-xs font-medium text-gray-400 group-hover:text-gray-600 transition-colors flex items-center">
+                    Visit <span className="ml-1">→</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer Stats */}
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <p className="text-gray-600 text-sm mb-1">Total Users</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.users}</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <p className="text-gray-600 text-sm mb-1">Active Listings</p>
+            <p className="text-2xl font-bold text-green-600">{stats.listings}</p>
+          </div>
+          <div className="bg-amber-50 rounded-lg p-4">
+            <p className="text-gray-600 text-sm mb-1">Pending Requests</p>
+            <p className="text-2xl font-bold text-amber-600">{stats.requests}</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4">
+            <p className="text-gray-600 text-sm mb-1">Active Assignments</p>
+            <p className="text-2xl font-bold text-purple-600">{stats.assignments}</p>
+          </div>
         </div>
       </div>
     </div>
